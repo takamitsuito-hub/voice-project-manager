@@ -10,6 +10,7 @@ type RecordingSessionForm = {
   startTime: string;
   endTime: string;
   memo: string;
+  scriptUrl: string;
 };
 
 export default function EditProject() {
@@ -87,6 +88,7 @@ export default function EditProject() {
           startTime: "",
           endTime: "",
           memo: "",
+          scriptUrl: "",
         },
       ]);
       return;
@@ -99,6 +101,7 @@ export default function EditProject() {
         startTime: s.start_time ? s.start_time.slice(0, 5) : "",
         endTime: s.end_time ? s.end_time.slice(0, 5) : "",
         memo: s.memo || "",
+        scriptUrl: s.script_url || "",
       }))
     );
   };
@@ -112,6 +115,7 @@ export default function EditProject() {
         startTime: "",
         endTime: "",
         memo: "",
+        scriptUrl: "",
       },
     ]);
   };
@@ -185,6 +189,7 @@ export default function EditProject() {
         start_time: s.startTime,
         end_time: s.endTime,
         memo: s.memo || null,
+        script_url: s.scriptUrl || null,
       }));
 
       const { error: insertError } = await supabase
@@ -299,6 +304,17 @@ export default function EditProject() {
               </div>
 
               <div style={{ marginBottom: 12 }}>
+                <label>台本URL</label>
+                <input
+                  value={session.scriptUrl}
+                  onChange={(e) =>
+                    updateSession(index, "scriptUrl", e.target.value)
+                  }
+                  placeholder="Google Driveの台本URL"
+                />
+              </div>
+
+              <div style={{ marginBottom: 12 }}>
                 <label>メモ</label>
                 <textarea
                   rows={2}
@@ -373,8 +389,8 @@ export default function EditProject() {
               type="checkbox"
               checked={orderConfirmed}
               onChange={(e) => setOrderConfirmed(e.target.checked)}
-            />
-            {" "}受注確定
+            />{" "}
+            受注確定
           </label>
 
           <br />
@@ -384,8 +400,8 @@ export default function EditProject() {
               type="checkbox"
               checked={scriptCreated}
               onChange={(e) => setScriptCreated(e.target.checked)}
-            />
-            {" "}台本作成
+            />{" "}
+            台本作成
           </label>
 
           <br />
@@ -395,8 +411,8 @@ export default function EditProject() {
               type="checkbox"
               checked={scheduleConfirmed}
               onChange={(e) => setScheduleConfirmed(e.target.checked)}
-            />
-            {" "}スケジュール確認
+            />{" "}
+            スケジュール確認
           </label>
         </div>
 

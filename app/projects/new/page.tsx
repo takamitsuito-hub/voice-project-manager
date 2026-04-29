@@ -10,6 +10,7 @@ type RecordingSessionForm = {
   startTime: string;
   endTime: string;
   memo: string;
+  scriptUrl: string;
 };
 
 export default function NewProject() {
@@ -35,6 +36,7 @@ export default function NewProject() {
       startTime: "",
       endTime: "",
       memo: "",
+      scriptUrl: "",
     },
   ]);
 
@@ -47,6 +49,7 @@ export default function NewProject() {
         startTime: "",
         endTime: "",
         memo: "",
+        scriptUrl: "",
       },
     ]);
   };
@@ -113,6 +116,7 @@ export default function NewProject() {
         start_time: s.startTime,
         end_time: s.endTime,
         memo: s.memo || null,
+        script_url: s.scriptUrl || null,
       }));
 
       const { error: sessionError } = await supabase
@@ -229,13 +233,22 @@ export default function NewProject() {
               </div>
 
               <div style={{ marginBottom: 12 }}>
+                <label>台本URL</label>
+                <input
+                  value={session.scriptUrl}
+                  onChange={(e) =>
+                    updateSession(index, "scriptUrl", e.target.value)
+                  }
+                  placeholder="Google Driveの台本URL"
+                />
+              </div>
+
+              <div style={{ marginBottom: 12 }}>
                 <label>メモ</label>
                 <textarea
                   rows={2}
                   value={session.memo}
-                  onChange={(e) =>
-                    updateSession(index, "memo", e.target.value)
-                  }
+                  onChange={(e) => updateSession(index, "memo", e.target.value)}
                   placeholder="例：スタジオA / 〇〇さんのみ"
                 />
               </div>
@@ -308,8 +321,8 @@ export default function NewProject() {
               type="checkbox"
               checked={orderConfirmed}
               onChange={(e) => setOrderConfirmed(e.target.checked)}
-            />
-            {" "}受注確定
+            />{" "}
+            受注確定
           </label>
 
           <br />
@@ -319,8 +332,8 @@ export default function NewProject() {
               type="checkbox"
               checked={scriptCreated}
               onChange={(e) => setScriptCreated(e.target.checked)}
-            />
-            {" "}台本作成
+            />{" "}
+            台本作成
           </label>
 
           <br />
@@ -330,8 +343,8 @@ export default function NewProject() {
               type="checkbox"
               checked={scheduleConfirmed}
               onChange={(e) => setScheduleConfirmed(e.target.checked)}
-            />
-            {" "}スケジュール確認
+            />{" "}
+            スケジュール確認
           </label>
         </div>
 

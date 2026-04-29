@@ -112,15 +112,30 @@ export default function Home() {
     return matchSearch && (showIncompleteOnly ? isIncomplete : true);
   });
 
-  const sortedProjects = [...filteredProjects].sort((a, b) => {
-    const aFirst = a.recording_sessions?.[0]?.recording_date;
-    const bFirst = b.recording_sessions?.[0]?.recording_date;
+const getNextSessionTime = (p: Project) => {
+  const now = new Date();
 
-    if (!aFirst) return 1;
-    if (!bFirst) return -1;
+  const futureSessions = [...(p.recording_sessions || [])]
+    .map((s) => ({
+      ...s,
+      dateTime: new Date(`${s.recording_date}T${s.start_time}`),
+    }))
+    .filter((s) => s.dateTime >= now)
+    .sort((a, b) => a.dateTime.getTime() - b.dateTime.getTime());
 
-    return aFirst.localeCompare(bFirst);
-  });
+  return futureSessions[0]?.dateTime ?? null;
+};
+
+const sortedProjects = [...filteredProjects].sort((a, b) => {
+  const aNext = getNextSessionTime(a);
+  const bNext = getNextSessionTime(b);
+
+  if (!aNext && !bNext) return 0;
+  if (!aNext) return 1;
+  if (!bNext) return -1;
+
+  return aNext.getTime() - bNext.getTime();
+});
 
   return (
     <div className="page">

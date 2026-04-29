@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../../lib/supabase";
 import { useParams, useRouter } from "next/navigation";
+import { formatDateTimeJP } from "../../../lib/dateFormat";
 
 type RecordingSession = {
   id: string;
@@ -11,6 +12,7 @@ type RecordingSession = {
   start_time: string;
   end_time: string;
   memo: string | null;
+  script_url: string | null;
 };
 
 type Project = {
@@ -53,7 +55,8 @@ export default function ProjectDetailPage() {
           recording_date,
           start_time,
           end_time,
-          memo
+          memo,
+          script_url
         )
       `)
       .eq("id", id)
@@ -65,6 +68,31 @@ export default function ProjectDetailPage() {
     }
 
     setProject(data as Project);
+  };
+
+  const copySessionText = async (session: RecordingSession) => {
+    if (!project) return;
+
+    const text = `${project.project_name}
+
+収録枠：
+${session.session_title || "収録"}
+
+収録日時：
+${formatDateTimeJP(session.recording_date, session.start_time, session.end_time)}
+
+台本URL：
+${session.script_url || "-"}
+
+メモ：
+${session.memo || "-"}`;
+
+    try {
+      await navigator.clipboard.writeText(text);
+      alert("LINE用テキストをコピーしました");
+    } catch {
+      alert("コピーに失敗しました。ブラウザの権限設定を確認してください。");
+    }
   };
 
   if (!project) {
@@ -103,13 +131,29 @@ export default function ProjectDetailPage() {
           <p>未設定</p>
         ) : (
           sessions.map((s) => (
-            <div key={s.id} className="card">
-              <p>{s.session_title || "収録"}</p>
+            <div key={s.id} className="card" style={{ background: "#fffafd" }}>
               <p>
-                {s.recording_date} {s.start_time.slice(0, 5)}～
-                {s.end_time.slice(0, 5)}
+                <strong>{s.session_title || "収録"}</strong>
               </p>
-              <p>{s.memo || ""}</p>
+
+              <p>
+                {formatDateTimeJP(s.recording_date, s.start_time, s.end_time)}
+              </p>
+
+              <p>
+                <strong>台本URL:</strong>{" "}
+                {s.script_url ? s.script_url : "-"}
+              </p>
+
+              {s.memo && (
+                <p>
+                  <strong>メモ:</strong> {s.memo}
+                </p>
+              )}
+
+              <button type="button" onClick={() => copySessionText(s)}>
+                LINE用にコピー
+              </button>
             </div>
           ))
         )}
@@ -124,7 +168,39 @@ export default function ProjectDetailPage() {
 
       <div className="form-section">
         <h3>備考</h3>
-        <p>{project.notes || "-"}</p>
+        <div style={{ whiteSpace: "pre-wrap" }}>{project.notes || "-"}</div>
+      </div>
+
+      <div className="form-section">
+        <h3>進行状況</h3>
+        <p>
+          <span
+            className={`status ${
+              project.order_confirmed ? "status-ok" : "status-ng"
+            }`}
+          >
+            受注
+          </span>
+
+          <span
+            className={`status ${
+              project.script_created ? "status-ok" : "status-ng"
+            }`}
+          >
+            台本
+          </span>
+
+          <span
+            className={`status ${
+              project.schedule_confirmed ? "status-ok" : "status-ng"
+            }`}
+          >
+            スケ
+          </span>
+        </p>
+
+        <p>収録完了: {project.recording_completed ? "完了" : "未完了"}</p>
+        <p>納品完了: {project.delivery_completed ? "完了" : "未完了"}</p>
       </div>
     </div>
   );
