@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
+import { useRouter } from "next/navigation";
 
 type RecordingSession = {
   id: string;
@@ -16,6 +17,7 @@ type Project = {
   id: string;
   project_name: string;
   due_date: string | null;
+  delivery_date: string | null;
   cast_members: string | null;
   sound_director: string | null;
   engineer: string | null;
@@ -24,13 +26,13 @@ type Project = {
   script_created: boolean;
   schedule_confirmed: boolean;
   recording_completed: boolean;
-  recording_completed_at: string | null;
   delivery_completed: boolean;
-  delivery_completed_at: string | null;
   recording_sessions: RecordingSession[];
 };
 
 export default function Home() {
+  const router = useRouter();
+
   const [projects, setProjects] = useState<Project[]>([]);
   const [search, setSearch] = useState("");
   const [showIncompleteOnly, setShowIncompleteOnly] = useState(false);
@@ -76,7 +78,7 @@ export default function Home() {
   };
 
   const handleRecordingComplete = async (id: string) => {
-    const ok = confirm("この案件を収録完了にしますか？\n進行中一覧から非表示になります。");
+    const ok = confirm("収録完了にしますか？");
     if (!ok) return;
 
     const { error } = await supabase
@@ -88,7 +90,7 @@ export default function Home() {
       .eq("id", id);
 
     if (error) {
-      alert("収録完了エラー: " + error.message);
+      alert("エラー: " + error.message);
     } else {
       fetchProjects();
     }
@@ -120,34 +122,9 @@ export default function Home() {
     return aFirst.localeCompare(bFirst);
   });
 
-  const todayProjects = sortedProjects.filter((p) =>
-    p.recording_sessions?.some((s) => s.recording_date === today)
-  );
-
   return (
     <div className="page">
       <h1 className="page-title">案件一覧</h1>
-
-      {todayProjects.length > 0 && (
-        <div className="form-section" style={{ background: "#fff0f5" }}>
-          <h3>📅 今日の収録</h3>
-
-          {todayProjects.map((p) => (
-            <div key={p.id} style={{ marginBottom: 12 }}>
-              <strong>{p.project_name}</strong>
-
-              {p.recording_sessions
-                .filter((s) => s.recording_date === today)
-                .map((s) => (
-                  <div key={s.id}>
-                    ⏰ {s.start_time.slice(0, 5)} ～ {s.end_time.slice(0, 5)}
-                    {s.session_title ? ` / ${s.session_title}` : ""}
-                  </div>
-                ))}
-            </div>
-          ))}
-        </div>
-      )}
 
       <div className="toolbar">
         <a className="button" href="/projects/new">
@@ -211,6 +188,8 @@ export default function Home() {
                   ? "card-complete"
                   : "card-incomplete"
               }`}
+              onClick={() => router.push(`/projects/${p.id}`)}
+              style={{ cursor: "pointer" }}
             >
               <strong style={{ fontSize: 16 }}>{p.project_name}</strong>
 
@@ -223,7 +202,6 @@ export default function Home() {
                     <div key={s.id}>
                       {s.recording_date} {s.start_time.slice(0, 5)} ～{" "}
                       {s.end_time.slice(0, 5)}
-                      {s.session_title ? ` / ${s.session_title}` : ""}
                     </div>
                   ))
                 )}
@@ -242,55 +220,41 @@ export default function Home() {
               </div>
 
               <div style={{ marginTop: 8 }}>
-                <span
-                  className={`status ${
-                    p.order_confirmed ? "status-ok" : "status-ng"
-                  }`}
-                >
+                <span className={`status ${p.order_confirmed ? "status-ok" : "status-ng"}`}>
                   受注
                 </span>
-
-                <span
-                  className={`status ${
-                    p.script_created ? "status-ok" : "status-ng"
-                  }`}
-                >
+                <span className={`status ${p.script_created ? "status-ok" : "status-ng"}`}>
                   台本
                 </span>
-
-                <span
-                  className={`status ${
-                    p.schedule_confirmed ? "status-ok" : "status-ng"
-                  }`}
-                >
+                <span className={`status ${p.schedule_confirmed ? "status-ok" : "status-ng"}`}>
                   スケ
                 </span>
               </div>
 
-              {p.notes && (
-                <div className="small-muted" style={{ marginTop: 6 }}>
-                  {p.notes.length > 60
-                    ? p.notes.slice(0, 60) + "..."
-                    : p.notes}
-                </div>
-              )}
-
               <div style={{ marginTop: 10, display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <a href={`/projects/${p.id}/edit`} className="button-secondary">
+                <a
+                  href={`/projects/${p.id}/edit`}
+                  className="button-secondary"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   編集
                 </a>
 
                 <button
-                  type="button"
-                  onClick={() => handleRecordingComplete(p.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRecordingComplete(p.id);
+                  }}
                 >
                   収録完了
                 </button>
 
                 <button
-                  type="button"
                   className="button-danger"
-                  onClick={() => handleDelete(p.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(p.id);
+                  }}
                 >
                   削除
                 </button>
