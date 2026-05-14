@@ -119,18 +119,16 @@ export default function CalendarPage() {
 
       const project = s.projects;
 
-      return {
-        title: `${project.project_name}${
-          s.session_title ? `｜${s.session_title}` : ""
-        }`,
-        start,
-        end,
-        session: s,
-        project,
-        isComplete:
-          project.order_confirmed &&
-          project.script_created &&
-          project.schedule_confirmed,
+        return {
+          title: s.session_title || "収録",
+          start,
+          end,
+          session: s,
+          project,
+          isComplete:
+            project.order_confirmed &&
+            project.script_created &&
+            project.schedule_confirmed,
       };
     });
 
@@ -191,6 +189,12 @@ export default function CalendarPage() {
           resizable
           onEventDrop={handleEventDrop}
           onEventResize={handleEventResize}
+
+          components={{
+            event: ({ event }: any) => (
+              <div>{event.session.session_title || "収録"}</div>
+            ),
+          }}
 
           /* ⭐ クリックで編集 */
           onSelectEvent={(event: CalendarEvent) =>

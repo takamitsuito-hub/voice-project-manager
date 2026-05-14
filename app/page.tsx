@@ -157,6 +157,16 @@ const sortedProjects = [...filteredProjects].sort((a, b) => {
         <a className="button button-secondary" href="/delivery-completed">
           納品完了一覧
         </a>
+        <button
+          type="button"
+          className="button-secondary"
+          onClick={async () => {
+            await supabase.auth.signOut();
+            window.location.href = "/login";
+          }}
+          >
+          ログアウト
+        </button>
       </div>
 
       <input

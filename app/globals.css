@@ -307,3 +307,18 @@ label {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
+.rbc-event {
+  font-size: 10px !important;
+  line-height: 1.1 !important;
+  padding: 2px 4px !important;
+  overflow: hidden;
+}
+
+.rbc-event-label {
+  display: none !important;
+}
+
+.rbc-event-content {
+  white-space: normal !important;
+  word-break: break-word;
+}
