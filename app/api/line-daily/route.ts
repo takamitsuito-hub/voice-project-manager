@@ -78,13 +78,21 @@ const sessions = ((data || []) as any[]).map((s) => ({
       : `【本日の収録】\n${today}\n\n` +
         sessions
           .map((s) => {
-            return [
-              `■ ${formatTime(s.start_time)}〜${formatTime(s.end_time)}`,
-              `${s.projects.project_name}${s.session_title ? `｜${s.session_title}` : ""}`,
-              `演者：${s.projects.cast_members || "-"}`,
-              s.script_url ? `台本URL：${s.script_url}` : null,
-              s.memo ? `メモ：${s.memo}` : null,
-            ]
+
+
+return [
+  "━━━━━━━━━━",
+  `■ ${formatTime(s.start_time)}〜${formatTime(s.end_time)}`,
+  "",
+  `${s.session_title || "収録枠名未設定"}`,
+  "",
+  `演者：${s.projects.cast_members || "-"}`,
+  `音響監督：${s.projects.sound_director || "-"}`,
+  `エンジニア：${s.projects.engineer || "-"}`,
+  s.script_url ? `台本：${s.script_url}` : null,
+]
+
+
               .filter(Boolean)
               .join("\n");
           })
