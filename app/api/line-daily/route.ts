@@ -17,11 +17,6 @@ type RecordingSession = {
   };
 };
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
 const formatTime = (time: string) => time.slice(0, 5);
 
 const getTodayJST = () => {
@@ -30,9 +25,24 @@ const getTodayJST = () => {
   return jst.toISOString().slice(0, 10);
 };
 
-export async function GET() {
+export async function GET(request: Request) {
+  const cronSecret = process.env.CRON_SECRET;
+
+  if (!cronSecret || request.headers.get("authorization") !== `Bearer ${cronSecret}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const token = process.env.LINE_CHANNEL_ACCESS_TOKEN;
   const to = process.env.LINE_TO_ID;
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    return NextResponse.json(
+      { error: "Supabase server configuration is missing" },
+      { status: 500 }
+    );
+  }
 
   if (!token || !to) {
     return NextResponse.json(
@@ -40,6 +50,15 @@ export async function GET() {
       { status: 500 }
     );
   }
+
+  // This client is exclusive to this server route; never forward a user session.
+  const supabase = createClient(supabaseUrl, serviceRoleKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+  });
 
   const today = getTodayJST();
 
@@ -67,10 +86,15 @@ export async function GET() {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-const sessions = ((data || []) as any[]).map((s) => ({
+const sessions = (data || []).map((s) => ({
   ...s,
   projects: Array.isArray(s.projects) ? s.projects[0] : s.projects,
 })) as RecordingSession[];
+
+  // An authenticated read-only check for deployments, without sending LINE.
+  if (new URL(request.url).searchParams.get("dryRun") === "true") {
+    return NextResponse.json({ ok: true, dryRun: true, date: today, count: sessions.length });
+  }
 
   const text =
     sessions.length === 0
