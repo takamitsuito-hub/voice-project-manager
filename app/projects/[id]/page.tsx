@@ -131,7 +131,7 @@ ${session.memo || "-"}`;
           <p>未設定</p>
         ) : (
           sessions.map((s) => (
-            <div key={s.id} className="card" style={{ background: "#fffafd" }}>
+            <div key={s.id} className="card">
               <p>
                 <strong>{s.session_title || "収録"}</strong>
               </p>

@@ -10,8 +10,7 @@ import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import { ja } from "date-fns/locale/ja";
 
-import "react-big-calendar/lib/css/react-big-calendar.css";
-import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
+import { japanDate } from "../../lib/schedule";
 
 const DragAndDropCalendar = withDragAndDrop(Calendar as any) as any;
 
@@ -25,11 +24,11 @@ const localizer = dateFnsLocalizer({
 
 /* ---------------- 色分けロジック ---------------- */
 const getColorBySession = (title: string | null) => {
-  if (!title) return "#90caf9";
-  if (title.includes("1回")) return "#42a5f5"; // 青
-  if (title.includes("2回")) return "#ab47bc"; // 紫
-  if (title.includes("3回")) return "#ffa726"; // オレンジ
-  return "#90caf9";
+  if (!title) return "#304c61";
+  if (title.includes("1回")) return "#304c61";
+  if (title.includes("2回")) return "#51415e";
+  if (title.includes("3回")) return "#5a4930";
+  return "#304c61";
 };
 
 /* ---------------- 型 ---------------- */
@@ -177,7 +176,7 @@ export default function CalendarPage() {
         </button>
       </div>
 
-      <div style={{ height: "80vh", marginTop: 20 }}>
+      <div className="calendar-frame">
         <DragAndDropCalendar
           localizer={localizer}
           events={events}
@@ -224,21 +223,21 @@ export default function CalendarPage() {
 
           /* ⭐ 色分け */
           eventPropGetter={(event: CalendarEvent) => {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = japanDate();
   const eventDate = event.session.recording_date;
 
   let backgroundColor = getColorBySession(event.session.session_title);
 
   if (eventDate === today) {
-    backgroundColor = "#ef5350"; // 今日だけ最優先で赤
+    backgroundColor = "#64403f"; // 今日の収録は落ち着いた赤で区別
   }
 
   return {
     style: {
       backgroundColor,
       borderRadius: "10px",
-      border: event.isComplete ? "2px solid #2e7d32" : "none",
-      color: "white",
+      border: event.isComplete ? "2px solid #a9d1ba" : "1px solid #647787",
+      color: "#f0f3f5",
       padding: "4px",
       fontWeight: 700,
     },

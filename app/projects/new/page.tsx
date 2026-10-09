@@ -185,7 +185,6 @@ export default function NewProject() {
               className="card"
               style={{
                 marginTop: 12,
-                background: "#fffafd",
               }}
             >
               <div style={{ marginBottom: 12 }}>

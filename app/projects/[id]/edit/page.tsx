@@ -258,7 +258,7 @@ export default function EditProject() {
             <div
               key={index}
               className="card"
-              style={{ marginTop: 12, background: "#fffafd" }}
+              style={{ marginTop: 12 }}
             >
               <div style={{ marginBottom: 12 }}>
                 <label>収録枠名</label>
