@@ -65,6 +65,10 @@ label { font-weight:500; display:inline-block; margin-bottom:7px; }
 .project-more .card-actions { margin-top:14px; }
 .empty-state { padding:32px 0; color:var(--muted); }
 .error-message { color:var(--red); }
+.reference-media-fields { border:1px solid var(--border); border-radius:8px; padding:12px; margin:0 0 16px; min-width:0; }
+.reference-media-fields legend { padding:0 6px; font-weight:500; }
+.reference-media-options { display:flex; flex-wrap:wrap; gap:8px 20px; }
+.reference-media-fields p { margin:4px 0 0; }
 /* Loaded after the calendar vendor CSS to cover popup and drag states too. */
 .rbc-calendar { background:var(--card); color:var(--text); border:1px solid var(--border); border-radius:12px; padding:12px; }
 .rbc-toolbar { margin-bottom:16px; gap:10px; flex-wrap:wrap; }

@@ -5,6 +5,8 @@ import { supabase } from "../../../lib/supabase";
 import { useParams, useRouter } from "next/navigation";
 import { formatDateTimeJP } from "../../../lib/dateFormat";
 
+import ReferenceMediaStatus from "../../components/ReferenceMediaStatus";
+
 type RecordingSession = {
   id: string;
   session_title: string | null;
@@ -13,6 +15,8 @@ type RecordingSession = {
   end_time: string;
   memo: string | null;
   script_url: string | null;
+  has_reference_video: boolean;
+  has_reference_audio: boolean;
 };
 
 type Project = {
@@ -56,7 +60,9 @@ export default function ProjectDetailPage() {
           start_time,
           end_time,
           memo,
-          script_url
+          script_url,
+          has_reference_video,
+          has_reference_audio
         )
       `)
       .eq("id", id)
@@ -144,6 +150,8 @@ ${session.memo || "-"}`;
                 <strong>台本URL:</strong>{" "}
                 {s.script_url ? s.script_url : "-"}
               </p>
+
+              <p><ReferenceMediaStatus video={s.has_reference_video} audio={s.has_reference_audio} /></p>
 
               {s.memo && (
                 <p>

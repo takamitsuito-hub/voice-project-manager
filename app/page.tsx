@@ -5,6 +5,8 @@ import Link from "next/link";
 import { supabase } from "../lib/supabase";
 import { japanDate, nextSession, shortSessionDate, sortSessions } from "../lib/schedule";
 
+import ReferenceMediaStatus from "./components/ReferenceMediaStatus";
+
 type RecordingSession = {
   id: string;
   session_title: string | null;
@@ -12,6 +14,8 @@ type RecordingSession = {
   start_time: string;
   end_time: string;
   memo: string | null;
+  has_reference_video: boolean;
+  has_reference_audio: boolean;
 };
 type Project = {
   id: string;
@@ -27,7 +31,7 @@ type Project = {
 
 async function readProjects() {
   return await supabase.from("projects").select(`
-    *, recording_sessions (id, session_title, recording_date, start_time, end_time, memo)
+    *, recording_sessions (id, session_title, recording_date, start_time, end_time, memo, has_reference_video, has_reference_audio)
   `).eq("recording_completed", false);
 }
 
@@ -130,6 +134,7 @@ export default function Home() {
                 <span className={`status ${p.order_confirmed ? "status-ok" : "status-ng"}`}>{p.order_confirmed ? "✓ 受注済" : "○ 受注待ち"}</span>
                 <span className={`status ${p.script_created ? "status-ok" : "status-ng"}`}>{p.script_created ? "✓ 台本済" : "○ 台本待ち"}</span>
                 <span className={`status ${p.schedule_confirmed ? "status-ok" : "status-ng"}`}>{p.schedule_confirmed ? "✓ 日程確認済" : "○ 日程確認待ち"}</span>
+                <ReferenceMediaStatus video={sessions.some(s => s.has_reference_video)} audio={sessions.some(s => s.has_reference_audio)} />
               </div>
               <div className="card-actions"><Link className="button button-secondary" href={`/projects/${p.id}`}>詳細 →</Link><Link className="button button-secondary" href={`/projects/${p.id}/edit`}>編集</Link></div>
             </div>

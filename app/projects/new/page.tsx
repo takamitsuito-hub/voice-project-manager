@@ -4,6 +4,8 @@ import { useState } from "react";
 import { supabase } from "../../../lib/supabase";
 import { useRouter } from "next/navigation";
 
+import ReferenceMediaFields from "../../components/ReferenceMediaFields";
+
 type RecordingSessionForm = {
   sessionTitle: string;
   recordingDate: string;
@@ -11,6 +13,8 @@ type RecordingSessionForm = {
   endTime: string;
   memo: string;
   scriptUrl: string;
+  hasReferenceVideo: boolean;
+  hasReferenceAudio: boolean;
 };
 
 export default function NewProject() {
@@ -37,6 +41,8 @@ export default function NewProject() {
       endTime: "",
       memo: "",
       scriptUrl: "",
+      hasReferenceVideo: false,
+      hasReferenceAudio: false,
     },
   ]);
 
@@ -50,6 +56,8 @@ export default function NewProject() {
         endTime: "",
         memo: "",
         scriptUrl: "",
+        hasReferenceVideo: false,
+        hasReferenceAudio: false,
       },
     ]);
   };
@@ -63,10 +71,10 @@ export default function NewProject() {
     setSessions(sessions.filter((_, i) => i !== index));
   };
 
-  const updateSession = (
+  const updateSession = <K extends keyof RecordingSessionForm,>(
     index: number,
-    field: keyof RecordingSessionForm,
-    value: string
+    field: K,
+    value: RecordingSessionForm[K]
   ) => {
     const next = [...sessions];
     next[index] = {
@@ -78,6 +86,12 @@ export default function NewProject() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (sessions.some(s => (s.hasReferenceVideo || s.hasReferenceAudio) &&
+      !(s.recordingDate && s.startTime && s.endTime))) {
+      alert("参考資料を設定した収録枠の収録日・開始時間・終了時間を入力してください。");
+      return;
+    }
 
     const validSessions = sessions.filter(
       (s) => s.recordingDate && s.startTime && s.endTime
@@ -117,6 +131,8 @@ export default function NewProject() {
         end_time: s.endTime,
         memo: s.memo || null,
         script_url: s.scriptUrl || null,
+        has_reference_video: s.hasReferenceVideo,
+        has_reference_audio: s.hasReferenceAudio,
       }));
 
       const { error: sessionError } = await supabase
@@ -241,6 +257,13 @@ export default function NewProject() {
                   placeholder="Google Driveの台本URL"
                 />
               </div>
+
+              <ReferenceMediaFields
+                video={session.hasReferenceVideo}
+                audio={session.hasReferenceAudio}
+                onVideoChange={checked => updateSession(index, "hasReferenceVideo", checked)}
+                onAudioChange={checked => updateSession(index, "hasReferenceAudio", checked)}
+              />
 
               <div style={{ marginBottom: 12 }}>
                 <label>メモ</label>

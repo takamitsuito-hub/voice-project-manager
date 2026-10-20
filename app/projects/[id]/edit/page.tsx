@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "../../../../lib/supabase";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 
+import ReferenceMediaFields from "../../../components/ReferenceMediaFields";
+
 type RecordingSessionForm = {
   sessionTitle: string;
   recordingDate: string;
@@ -11,6 +13,8 @@ type RecordingSessionForm = {
   endTime: string;
   memo: string;
   scriptUrl: string;
+  hasReferenceVideo: boolean;
+  hasReferenceAudio: boolean;
 };
 
 export default function EditProject() {
@@ -89,6 +93,8 @@ export default function EditProject() {
           endTime: "",
           memo: "",
           scriptUrl: "",
+          hasReferenceVideo: false,
+          hasReferenceAudio: false,
         },
       ]);
       return;
@@ -102,6 +108,8 @@ export default function EditProject() {
         endTime: s.end_time ? s.end_time.slice(0, 5) : "",
         memo: s.memo || "",
         scriptUrl: s.script_url || "",
+        hasReferenceVideo: s.has_reference_video ?? false,
+        hasReferenceAudio: s.has_reference_audio ?? false,
       }))
     );
   };
@@ -116,6 +124,8 @@ export default function EditProject() {
         endTime: "",
         memo: "",
         scriptUrl: "",
+        hasReferenceVideo: false,
+        hasReferenceAudio: false,
       },
     ]);
   };
@@ -129,10 +139,10 @@ export default function EditProject() {
     setSessions(sessions.filter((_, i) => i !== index));
   };
 
-  const updateSession = (
+  const updateSession = <K extends keyof RecordingSessionForm,>(
     index: number,
-    field: keyof RecordingSessionForm,
-    value: string
+    field: K,
+    value: RecordingSessionForm[K]
   ) => {
     const next = [...sessions];
     next[index] = {
@@ -144,6 +154,12 @@ export default function EditProject() {
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (sessions.some(s => (s.hasReferenceVideo || s.hasReferenceAudio) &&
+      !(s.recordingDate && s.startTime && s.endTime))) {
+      alert("参考資料を設定した収録枠の収録日・開始時間・終了時間を入力してください。");
+      return;
+    }
 
     const { error: projectError } = await supabase
       .from("projects")
@@ -190,6 +206,8 @@ export default function EditProject() {
         end_time: s.endTime,
         memo: s.memo || null,
         script_url: s.scriptUrl || null,
+        has_reference_video: s.hasReferenceVideo,
+        has_reference_audio: s.hasReferenceAudio,
       }));
 
       const { error: insertError } = await supabase
@@ -313,6 +331,13 @@ export default function EditProject() {
                   placeholder="Google Driveの台本URL"
                 />
               </div>
+
+              <ReferenceMediaFields
+                video={session.hasReferenceVideo}
+                audio={session.hasReferenceAudio}
+                onVideoChange={checked => updateSession(index, "hasReferenceVideo", checked)}
+                onAudioChange={checked => updateSession(index, "hasReferenceAudio", checked)}
+              />
 
               <div style={{ marginBottom: 12 }}>
                 <label>メモ</label>
